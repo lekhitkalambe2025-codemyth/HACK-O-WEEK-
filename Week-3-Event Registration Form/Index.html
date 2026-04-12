@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CYBER-SYNAPSE 2026 | Connect the Future</title>
+    <style>
+        :root {
+            --accent: #ffae00; /* Electric Gold */
+            --accent-glow: rgba(255, 174, 0, 0.4);
+            --bg-deep: #05070a;
+            --glass: rgba(15, 20, 30, 0.85);
+            --text-dim: #a0a0a0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: #ffffff;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* --- BACKGROUND ENGINE --- */
+        #canvas-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            background: radial-gradient(circle at center, #0c121d 0%, #05070a 100%);
+        }
+
+        /* --- NAVIGATION --- */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 20px 8%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(5, 7, 10, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: 3px;
+            border-left: 4px solid var(--accent);
+            padding-left: 12px;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 30px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+
+        .nav-links a:hover { color: var(--accent); }
+
+        /* --- HERO SECTION --- */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .hero p.tagline {
+            color: var(--accent);
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .hero h1 {
+            font-size: clamp(3rem, 10vw, 6rem);
+            font-weight: 900;
+            background: linear-gradient(to bottom, #fff 50%, #666);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* --- CONTENT SECTIONS --- */
+        section { padding: 80px 10%; }
+
+        .section-title {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .section-title span { color: var(--accent); }
+
+        .content-para {
+            max-width: 800px;
+            margin: 0 auto 40px auto;
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 1.1rem;
+        }
+
+        /* --- CARDS --- */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .glass-card {
+            background: var(--glass);
+            padding: 40px;
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: 0.4s;
+            text-align: center;
+        }
+
+        .glass-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .glass-card h3 { color: var(--accent); margin-bottom: 15px; font-size: 1.5rem; }
+
+        /* --- RULES SECTION --- */
+        .rules-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 20px;
+        }
+
+        .rule-item {
+            display: flex;
+            gap: 15px;
+            background: rgba(255,255,255,0.03);
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 3px solid var(--accent);
+        }
+
+        /* --- SCHEDULE SECTION --- */
+        .timeline {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .timeline-item {
+            padding: 20px;
+            border-left: 2px solid var(--accent);
+            margin-left: 20px;
+            position: relative;
+            background: rgba(255,255,255,0.02);
+            margin-bottom: 10px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: var(--accent);
+            left: -7px;
+            top: 24px;
+            border-radius: 50%;
+        }
+
+        /* --- REGISTRATION FORM --- */
+        .reg-wrapper {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--glass);
+            border-radius: 40px;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .reg-info { 
+            padding: 60px; 
+            background: rgba(255, 174, 0, 0.05); 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .timer-display {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0 40px 0;
+        }
+
+        .time-unit {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--accent);
+            border-radius: 10px;
+            padding: 10px;
+            min-width: 65px;
+            text-align: center;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .time-num {
+            display: block;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .time-label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            color: var(--text-dim);
+        }
+
+        .form-container { padding: 60px; }
+        .input-group { margin-bottom: 20px; }
+        label { display: block; font-size: 0.7rem; color: var(--accent); font-weight: bold; margin-bottom: 8px; text-transform: uppercase; }
+        
+        input, select, textarea {
+            width: 100%;
+            background: #11141b; 
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 14px;
+            border-radius: 10px;
+            color: white;
+            outline: none;
+        }
+
+        select option {
+            background: #11141b; 
+            color: white; 
+        }
+
+        input:focus, select:focus, textarea:focus { border-color: var(--accent); background: #11141b; }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: var(--accent);
+            border: none;
+            border-radius: 10px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        .submit-btn:hover { box-shadow: 0 0 25px var(--accent-glow); transform: scale(1.02); }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            color: var(--text-dim);
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 850px) {
+            .reg-wrapper { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+            .rules-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="canvas-bg"></canvas>
+
+    <nav>
+        <div class="logo-text">CYBER-SYNAPSE</div>
+        <div class="nav-links">
+            <a href="#about">About</a>
+            <a href="#rules">Rules</a>
+            <a href="#prizes">Prizes</a>
+            <a href="#register">Register</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <p class="tagline">Neural Network Hackathon</p>
+        <h1>CYBER-SYNAPSE</h1>
+        <p style="color: var(--text-dim); max-width: 600px; margin-top: 20px;">
+            A 48-hour challenge designed to push the boundaries of Artificial Intelligence, 
+            Cybersecurity, and Full-Stack Innovation. Sync your brain, code your vision.
+        </p>
+        <a href="#register" style="margin-top: 30px; color: var(--accent); text-decoration: none; border: 1px solid var(--accent); padding: 12px 30px; border-radius: 50px; font-weight: bold;">INITIALIZE_SYSTEM</a>
+    </section>
+
+    <section id="about">
+        <h2 class="section-title">About <span>Cyber-Synapse</span></h2>
+        <p class="content-para">
+            Cyber-Synapse 2026 is a premier 48-hour hackathon designed to act as a catalyst for technological breakthrough. We bring together the most brilliant minds—from data scientists and cybersecurity experts to full-stack developers—to build high-impact solutions. This isn't just a competition; it's a high-intensity environment where raw ideas are forged into functional prototypes under the guidance of industry veterans.
+        </p>
+        <div class="grid-container">
+            <div class="glass-card">
+                <h3>Collaborate</h3>
+                <p>Form teams with the brightest developers and designers in the city.</p>
+            </div>
+            <div class="glass-card">
+                <h3>Innovate</h3>
+                <p>Build real-world solutions for the most pressing technical problems.</p>
+            </div>
+            <div class="glass-card">
+                <h3>Elevate</h3>
+                <p>Mentorship from industry experts to take your project to the next level.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="rules">
+        <h2 class="section-title">Rules of <span>Engagement</span></h2>
+        <div class="rules-grid">
+            <div class="rule-item">
+                <span style="color:var(--accent); font-weight:bold;">01</span>
+                <div>
+                    <h4>Original Code</h4>
+                    <p style="font-size:0.9rem; color:var(--text-dim);">All code must be written during the 48-hour window. Pre-built libraries are allowed, but core logic must be fresh.</p>
+                </div>
+            </div>
+            <div class="rule-item">
+                <span style="color:var(--accent); font-weight:bold;">02</span>
+                <div>
+                    <h4>Team Size</h4>
+                    <p style="font-size:0.9rem; color:var(--text-dim);">Teams must consist of 2 to 4 members. Inter-disciplinary teams are highly encouraged for better results.</p>
+                </div>
+            </div>
+            <div class="rule-item">
+                <span style="color:var(--accent); font-weight:bold;">03</span>
+                <div>
+                    <h4>IP Ownership</h4>
+                    <p style="font-size:0.9rem; color:var(--text-dim);">Participants retain full ownership of the intellectual property created during the event.</p>
+                </div>
+            </div>
+            <div class="rule-item">
+                <span style="color:var(--accent); font-weight:bold;">04</span>
+                <div>
+                    <h4>Ethical Conduct</h4>
+                    <p style="font-size:0.9rem; color:var(--text-dim);">Zero tolerance for plagiarism or harassment. Every line of code must adhere to ethical standards.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="schedule">
+        <h2 class="section-title">Event <span>Timeline</span></h2>
+        <div class="timeline">
+            <div class="timeline-item">
+                <strong>Day 1 | 09:00 AM</strong>
+                <p>Opening Ceremony & Problem Statement Reveal</p>
+            </div>
+            <div class="timeline-item">
+                <strong>Day 1 | 12:00 PM</strong>
+                <p>Coding Phase Begins - Hacking Starts!</p>
+            </div>
+            <div class="timeline-item">
+                <strong>Day 2 | 10:00 AM</strong>
+                <p>Mid-Point Check-in & Mentor Interaction Sessions</p>
+            </div>
+            <div class="timeline-item">
+                <strong>Day 3 | 12:00 PM</strong>
+                <p>Submission Deadline & Final Pitching Rounds</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="prizes">
+        <h2 class="section-title">The <span>Rewards</span></h2>
+        <div class="grid-container">
+            <div class="glass-card">
+                <div style="font-size: 3rem;">🥇</div>
+                <h3>Grand Prize</h3>
+                <p>₹50,000 + Internship Opportunities</p>
+            </div>
+            <div class="glass-card">
+                <div style="font-size: 3rem;">🥈</div>
+                <h3>Runner Up</h3>
+                <p>₹25,000 + Tech Swag Kits</p>
+            </div>
+            <div class="glass-card">
+                <div style="font-size: 3rem;">🥉</div>
+                <h3>Innovator Award</h3>
+                <p>₹10,000 + Certification</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="register">
+        <div class="reg-wrapper">
+            <div class="reg-info">
+                <h2 style="font-size: 2.5rem; margin-bottom: 20px;">Secure Your Slot</h2>
+                <p>Systems initializing in:</p>
+                
+                <div class="timer-display">
+                    <div class="time-unit"><span class="time-num" id="days">00</span><span class="time-label">Days</span></div>
+                    <div class="time-unit"><span class="time-num" id="hours">00</span><span class="time-label">Hrs</span></div>
+                    <div class="time-unit"><span class="time-num" id="mins">00</span><span class="time-label">Min</span></div>
+                    <div class="time-unit"><span class="time-num" id="secs">00</span><span class="time-label">Sec</span></div>
+                </div>
+
+                <ul style="list-style: none; color: var(--accent); font-weight: bold;">
+                    <li>✓ 48 Hours of Coding</li>
+                    <li>✓ Free Meals & Drinks</li>
+                    <li>✓ High-Speed WiFi</li>
+                    <li>✓ Gaming Lounge Access</li>
+                </ul>
+            </div>
+            <div class="form-container">
+                <form id="regForm">
+                    <div class="input-group">
+                        <label>Team Lead Name</label>
+                        <input type="text" required>
+                    </div>
+                    <div class="input-group">
+                        <label>College Identity</label>
+                        <input type="text" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Email Address</label>
+                        <input type="email" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Password</label>
+                        <input type="password" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Specialized Domain</label>
+                        <select required>
+                            <option value="" disabled selected>Select your domain</option>
+                            <option>Generative AI</option>
+                            <option>Blockchain Systems</option>
+                            <option>Cloud Security</option>
+                            <option>Modern Web Frameworks</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Team Description</label>
+                        <textarea rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn" id="subBtn">EXECUTE REGISTRATION</button>
+                    <p id="success" style="display:none; color: var(--accent); text-align: center; margin-top: 20px; font-weight: bold;">REGISTRATION_COMPLETE_ACCESS_GRANTED</p>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 CYBER-SYNAPSE | Organized for Hack-o-Week</p>
+    </footer>
+
+    <script>
+        // --- COUNTDOWN TIMER LOGIC ---
+        function updateCountdown() {
+            const hackathonDate = new Date("Feb 28, 2026 00:00:00").getTime();
+            const now = new Date().getTime();
+            const gap = hackathonDate - now;
+
+            const second = 1000, minute = second * 60, hour = minute * 60, day = hour * 24;
+
+            const d = Math.floor(gap / day);
+            const h = Math.floor((gap % day) / hour);
+            const m = Math.floor((gap % hour) / minute);
+            const s = Math.floor((gap % minute) / second);
+
+            document.getElementById("days").innerText = d < 10 ? "0" + d : d;
+            document.getElementById("hours").innerText = h < 10 ? "0" + h : h;
+            document.getElementById("mins").innerText = m < 10 ? "0" + m : m;
+            document.getElementById("secs").innerText = s < 10 ? "0" + s : s;
+        }
+        setInterval(updateCountdown, 1000);
+
+        // --- INTERACTIVE BACKGROUND ENGINE ---
+        const canvas = document.getElementById('canvas-bg');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        const mouse = { x: null, y: null };
+
+        window.addEventListener('mousemove', (e) => { mouse.x = e.x; mouse.y = e.y; });
+
+        function init() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            particles = [];
+            for (let i = 0; i < 100; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2 + 1,
+                    speedX: (Math.random() - 0.5) * 1,
+                    speedY: (Math.random() - 0.5) * 1
+                });
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particles.length; i++) {
+                let p = particles[i];
+                p.x += p.speedX; p.y += p.speedY;
+                if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+                for (let j = i; j < particles.length; j++) {
+                    let p2 = particles[j];
+                    let dx = p.x - p2.x; let dy = p.y - p2.y;
+                    let dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < 150) {
+                        ctx.strokeStyle = `rgba(255, 174, 0, ${1 - dist/150})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+        window.addEventListener('resize', init);
+        init(); animate();
+
+        document.getElementById('regForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            document.getElementById('subBtn').style.display = 'none';
+            document.getElementById('success').style.display = 'block';
+        });
+    </script>
+</body>
+</html>
