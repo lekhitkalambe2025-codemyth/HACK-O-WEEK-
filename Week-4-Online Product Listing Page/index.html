@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural_Store | Quantum Marketplace</title>
+    <style>
+        :root { 
+            --neon: #00ff41; 
+            --glass: rgba(255, 255, 255, 0.05); 
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --bg: #020202; 
+        }
+        
+        * { cursor: none !important; margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            background: var(--bg); 
+            color: white; 
+            font-family: 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            background-image: radial-gradient(circle at 50% 50%, #0a0a0a 0%, #000 100%);
+        }
+
+        /* Stylish White Pointer */
+        #custom-cursor {
+            width: 10px; height: 10px; background: #fff; border-radius: 50%;
+            position: fixed; pointer-events: none; z-index: 10001;
+            transform: translate(-50%, -50%); box-shadow: 0 0 15px #fff;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 40px; display: flex; gap: 30px; }
+
+        .shop-content { flex: 3; }
+
+        /* Cart Sidebar */
+        .cart-sidebar { 
+            flex: 1; 
+            background: var(--glass); 
+            backdrop-filter: blur(20px); 
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 25px;
+            height: fit-content;
+            position: sticky;
+            top: 40px;
+        }
+
+        .header { text-align: left; margin-bottom: 40px; }
+        .header h1 { font-size: 2.5rem; letter-spacing: 5px; color: #fff; }
+        .header span { color: var(--neon); }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .product-card {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 20px;
+            transition: 0.4s;
+            position: relative;
+        }
+
+        .product-card:hover { border-color: var(--neon); transform: translateY(-5px); }
+
+        .image-container { width: 100%; height: 180px; overflow: hidden; border-radius: 12px; margin-bottom: 15px; }
+        .product-img { width: 100%; height: 100%; object-fit: cover; }
+
+        .spec-list { font-size: 0.75rem; color: #777; margin: 10px 0; list-style: none; }
+        .spec-list li::before { content: "> "; color: var(--neon); }
+
+        .price-tag { font-size: 1.4rem; color: var(--neon); font-family: monospace; display: block; margin: 10px 0; }
+
+        .action-btn {
+            width: 100%; background: rgba(0, 255, 65, 0.1); border: 1px solid var(--neon);
+            color: var(--neon); padding: 12px; border-radius: 10px; font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .action-btn:hover { background: var(--neon); color: #000; box-shadow: 0 0 15px var(--neon); }
+
+        /* Cart Styling */
+        .cart-title { border-bottom: 1px solid var(--glass-border); padding-bottom: 10px; margin-bottom: 20px; color: var(--neon); }
+        .cart-item { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 10px; }
+        .total-section { border-top: 1px solid var(--glass-border); margin-top: 20px; padding-top: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div id="custom-cursor"></div>
+
+    <div class="container">
+        <div class="shop-content">
+            <div class="header">
+                <h1>NEURAL<span>_STORE</span></h1>
+                <p style="color: #555;">[ SESSION_ACTIVE: 0x7F4A ] [ STATUS: SECURE ]</p>
+            </div>
+
+            <div class="product-grid" id="main-grid"></div>
+        </div>
+
+        <div class="cart-sidebar">
+            <h2 class="cart-title">_TERMINAL_CART</h2>
+            <div id="cart-items">
+                <p style="color:#444; font-size: 0.8rem;">[ EMPTY_INVENTORY ]</p>
+            </div>
+            <div class="total-section">
+                TOTAL: <span id="cart-total" style="color: var(--neon);">$0.00</span>
+            </div>
+            <button class="action-btn" style="margin-top: 20px;" onclick="checkout()">CHECKOUT_ENCRYPTED</button>
+        </div>
+    </div>
+
+    <script>
+        const dot = document.getElementById('custom-cursor');
+        document.addEventListener('mousemove', (e) => {
+            dot.style.left = e.clientX + 'px';
+            dot.style.top = e.clientY + 'px';
+        });
+
+        // Expanded content for your Hack-o-Week project
+        const products = [
+            { id: 1, name: "Arduino Master Board", price: 45, tag: "DELD", specs: ["ATMega328P", "Digital I/O: 14", "PWM: 6"], img: "https://images.unsplash.com/photo-1553406830-ef2513450d76?w=600" },
+            { id: 2, name: "Graphene Composite", price: 120, tag: "NANO", specs: ["Single-layer", "99.9% Purity", "Hexagonal Lattice"], img: "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=600" },
+            { id: 3, name: "C++ Logic Engine", price: 30, tag: "CODE", specs: ["O(log n) Efficient", "Standard Template Lib", "STL-Linked"], img: "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=600" },
+            { id: 4, name: "Neural Interface HUD", price: 850, tag: "CYBER", specs: ["Refresh: 240Hz", "Neural-sync", "FoV: 120°"], img: "https://images.unsplash.com/photo-1535223289827-42f1e9919769?w=600" },
+            { id: 5, name: "Silver Nano-Ink", price: 65, tag: "NANO", specs: ["Conductive", "Low Viscosity", "Fast Curing"], img: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600" },
+            { id: 6, name: "Binary Decoder 4:1", price: 15, tag: "DELD", specs: ["Propagation: 5ns", "CMOS Logic", "TTL-Ready"], img: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600" },
+            { id: 7, name: "Python Flow-Gen", price: 10, tag: "FREE", specs: ["Logic Flowmapping", "Auto-Code Gen", "NoSQL Support"], img: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600" },
+            { id: 8, name: "Cyber-Synapse Core", price: 1500, tag: "ELITE", specs: ["Multi-core Link", "Bio-Compatible", "Quantum-Safe"], img: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=600" }
+        ];
+
+        let cart = [];
+
+        function renderProducts() {
+            const grid = document.getElementById('main-grid');
+            grid.innerHTML = products.map(p => `
+                <div class="product-card">
+                    <div class="image-container"><img src="${p.img}" class="product-img"></div>
+                    <h3>${p.name}</h3>
+                    <ul class="spec-list">${p.specs.map(s => `<li>${s}</li>`).join('')}</ul>
+                    <span class="price-tag">$${p.price.toFixed(2)}</span>
+                    <button class="action-btn" onclick="addToCart(${p.id})">ADD_TO_CART</button>
+                </div>
+            `).join('');
+        }
+
+        function addToCart(id) {
+            const item = products.find(p => p.id === id);
+            cart.push(item);
+            updateCart();
+        }
+
+        function updateCart() {
+            const cartList = document.getElementById('cart-items');
+            const totalText = document.getElementById('cart-total');
+            if(cart.length === 0) {
+                cartList.innerHTML = `<p style="color:#444; font-size: 0.8rem;">[ EMPTY_INVENTORY ]</p>`;
+            } else {
+                cartList.innerHTML = cart.map(i => `<div class="cart-item"><span>${i.name}</span><span>$${i.price}</span></div>`).join('');
+            }
+            const total = cart.reduce((acc, curr) => acc + curr.price, 0);
+            totalText.innerText = `$${total.toFixed(2)}`;
+        }
+
+        function checkout() {
+            if(cart.length === 0) return alert("CART_EMPTY_ERROR: ACCESS_DENIED");
+            alert("ORDER_INITIALIZED: Payment gateway encrypted.");
+            cart = [];
+            updateCart();
+        }
+
+        renderProducts();
+
+        // Interaction scaling
+        document.addEventListener('mouseover', (e) => {
+            if(e.target.tagName === 'BUTTON' || e.target.closest('.product-card')) {
+                dot.style.transform = 'translate(-50%, -50%) scale(2.5)';
+            } else {
+                dot.style.transform = 'translate(-50%, -50%) scale(1)';
+            }
+        });
+    </script>
+</body>
+</html>
