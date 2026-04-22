@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loom_Tasks | Command_Center</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Plus+Jakarta+Sans:wght@300;800&display=swap');
+
+        :root { 
+            --neon-citrus: #ff9f1c; 
+            --neon-lime: #cbf3f0;
+            --obsidian: #010101;
+            --panel-bg: rgba(15, 15, 15, 0.8);
+        }
+        
+        * { cursor: none !important; margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            background: var(--obsidian);
+            color: #fff; 
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* DYNAMIC GLOW CURSOR */
+        #custom-cursor {
+            width: 10px; height: 10px; background: var(--neon-citrus); border-radius: 50%;
+            position: fixed; pointer-events: none; z-index: 10001;
+            transform: translate(-50%, -50%); box-shadow: 0 0 30px var(--neon-citrus);
+            transition: transform 0.1s ease, width 0.3s, height 0.3s;
+        }
+
+        /* LEFT NAVIGATION HUD */
+        .sidebar-hud {
+            width: 400px;
+            height: 100vh;
+            background: var(--panel-bg);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255,159,28,0.2);
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        .sidebar-hud h1 { 
+            font-family: 'Syncopate', sans-serif; 
+            font-size: 1.4rem; 
+            letter-spacing: 5px; 
+            color: var(--neon-citrus);
+            margin-bottom: 10px;
+        }
+
+        .version-tag { font-size: 0.6rem; letter-spacing: 3px; color: #444; margin-bottom: 60px; }
+
+        .input-chamber label { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #666; display: block; margin-bottom: 15px; }
+        
+        input {
+            width: 100%; padding: 20px; border: none; border-bottom: 2px solid #222;
+            background: transparent; color: #fff; font-size: 1.1rem; outline: none; margin-bottom: 40px; transition: 0.4s;
+        }
+        input:focus { border-bottom-color: var(--neon-citrus); }
+
+        .control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: auto; }
+        
+        .btn {
+            padding: 18px; border: 1px solid rgba(255,255,255,0.1); border-radius: 5px;
+            font-weight: 800; font-size: 0.7rem; letter-spacing: 1px; transition: 0.3s; color: #fff; background: transparent;
+        }
+        .btn-main { grid-column: span 2; background: var(--neon-citrus); color: #000; border: none; margin-bottom: 10px; }
+        .btn:hover:not(:disabled) { background: #fff; color: #000; transform: translateY(-5px); }
+        .btn:disabled { opacity: 0.1; }
+
+        /* RIGHT STREAM AREA */
+        .task-stream {
+            flex: 1;
+            padding: 80px;
+            overflow-y: auto;
+            position: relative;
+            background-image: radial-gradient(rgba(255,159,28,0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        .stream-header { font-size: 0.7rem; letter-spacing: 5px; color: #333; margin-bottom: 40px; text-transform: uppercase; }
+
+        .mosaic-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .task-node {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 30px;
+            border-radius: 2px;
+            position: relative;
+            animation: nodeRise 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+        }
+
+        @keyframes nodeRise { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+
+        .task-node::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--neon-citrus);
+        }
+
+        .node-id { font-family: monospace; font-size: 0.6rem; color: #444; margin-bottom: 10px; display: block; }
+        .node-text { font-size: 1.1rem; font-weight: 300; line-height: 1.4; }
+
+        /* ANALYTICS HUD */
+        .analytics {
+            margin-top: 40px; padding: 20px; border: 1px solid #111; font-family: monospace; font-size: 0.65rem; color: #555;
+        }
+        .analytics span { color: var(--neon-citrus); }
+
+    </style>
+</head>
+<body>
+
+    <div id="custom-cursor"></div>
+
+    <aside class="sidebar-hud">
+        <h1>LOOM_TASKS</h1>
+        <div class="version-tag">STK_ENGINE // CORE_V5.0</div>
+
+        <div class="input-chamber">
+            <label>Initialize Objective</label>
+            <input type="text" id="taskIn" placeholder="SEQUENCE_INPUT...">
+        </div>
+
+        <div class="analytics">
+            <p>> UNDO_RECORDS: <span id="uPtr">0</span></p>
+            <p>> REDO_RECORDS: <span id="rPtr">0</span></p>
+            <p style="margin-top:10px;">> STATUS: <span style="color:var(--neon-lime)">NOMINAL_FLOW</span></p>
+        </div>
+
+        <div class="control-grid">
+            <button class="btn btn-main" onclick="addTask()">EXECUTE_PUSH</button>
+            <button class="btn" id="undoBtn" onclick="undo()" disabled>UNDO_POP</button>
+            <button class="btn" id="redoBtn" onclick="redo()" disabled>REDO_PUSH</button>
+        </div>
+    </aside>
+
+    <main class="task-stream">
+        <div class="stream-header">Current_Data_Stack_Output</div>
+        <div class="mosaic-container" id="taskList">
+            </div>
+    </main>
+
+    <script>
+        const dot = document.getElementById('custom-cursor');
+        document.addEventListener('mousemove', (e) => {
+            dot.style.left = e.clientX + 'px';
+            dot.style.top = e.clientY + 'px';
+        });
+
+        // DUAL STACK NAVIGATION ENGINE
+        let tasks = [];
+        let undoStack = [];
+        let redoStack = [];
+
+        function addTask() {
+            const val = document.getElementById('taskIn').value.trim();
+            if (!val) return;
+
+            undoStack.push([...tasks]);
+            redoStack = [];
+            
+            tasks.push({ id: Math.random().toString(36).substr(2, 5).toUpperCase(), text: val });
+            document.getElementById('taskIn').value = "";
+            render();
+        }
+
+        function undo() {
+            if (undoStack.length === 0) return;
+            redoStack.push([...tasks]);
+            tasks = undoStack.pop();
+            render();
+        }
+
+        function redo() {
+            if (redoStack.length === 0) return;
+            undoStack.push([...tasks]);
+            tasks = redoStack.pop();
+            render();
+        }
+
+        function render() {
+            const list = document.getElementById('taskList');
+            list.innerHTML = "";
+            
+            tasks.forEach(t => {
+                const node = document.createElement('div');
+                node.className = 'task-node';
+                node.innerHTML = `
+                    <span class="node-id">0x${t.id}</span>
+                    <div class="node-text">${t.text}</div>
+                `;
+                list.appendChild(node);
+            });
+
+            document.getElementById('undoBtn').disabled = undoStack.length === 0;
+            document.getElementById('redoBtn').disabled = redoStack.length === 0;
+            document.getElementById('uPtr').innerText = undoStack.length;
+            document.getElementById('rPtr').innerText = redoStack.length;
+        }
+
+        // INTERACTIVE CURSOR FEEDBACK
+        document.addEventListener('mouseover', (e) => {
+            if(e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') {
+                dot.style.width = '50px'; dot.style.height = '50px';
+                dot.style.background = 'transparent'; dot.style.border = '1px solid var(--neon-citrus)';
+            } else {
+                dot.style.width = '10px'; dot.style.height = '10px';
+                dot.style.background = 'var(--neon-citrus)'; dot.style.border = 'none';
+            }
+        });
+
+        render();
+    </script>
+</body>
+</html>
