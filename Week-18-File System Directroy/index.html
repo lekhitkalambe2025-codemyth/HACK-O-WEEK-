@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentinel_FS | Isometric Mesh</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=B612+Mono&family=Lexend+Exa:wght@200;900&display=swap');
+
+        :root { 
+            --gold: #ffc107; 
+            --carbon: #121212;
+            --dim: #2a2a2a;
+            --line: rgba(255, 193, 7, 0.1);
+        }
+        
+        * { cursor: none !important; margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            background-color: var(--carbon);
+            background-image: 
+                linear-gradient(var(--line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--line) 1px, transparent 1px);
+            background-size: 100px 100px;
+            color: #fff; 
+            font-family: 'B612 Mono', monospace;
+            height: 100vh;
+            overflow: hidden;
+            perspective: 1000px;
+        }
+
+        /* FLOATING DIAMOND CURSOR */
+        #custom-cursor {
+            width: 15px; height: 15px; background: var(--gold);
+            position: fixed; pointer-events: none; z-index: 10001;
+            transform: translate(-50%, -50%) rotate(45deg);
+            box-shadow: 0 0 20px var(--gold);
+            transition: transform 0.1s ease;
+        }
+
+        /* CORNER CONTROLS (Breaking the Sidebar Layout) */
+        .corner-node {
+            position: absolute;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid var(--gold);
+            padding: 25px;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            transition: 0.3s;
+        }
+        .top-left { top: 30px; left: 30px; width: 320px; }
+        .top-right { top: 30px; right: 30px; width: 320px; text-align: right; }
+        .bottom-left { bottom: 30px; left: 30px; }
+
+        .tag { font-family: 'Lexend Exa', sans-serif; font-size: 0.6rem; color: var(--gold); letter-spacing: 3px; display: block; margin-bottom: 10px; }
+        
+        input {
+            width: 100%; background: transparent; border: none; border-bottom: 2px solid var(--dim);
+            color: #fff; padding: 10px 0; margin-bottom: 20px; outline: none; font-size: 1rem;
+        }
+        input:focus { border-bottom-color: var(--gold); }
+
+        .btn-iso {
+            display: inline-block; padding: 12px 20px; border: 1px solid var(--gold);
+            background: transparent; color: var(--gold); font-weight: 900;
+            text-transform: uppercase; font-size: 0.7rem; transition: 0.3s;
+        }
+        .btn-iso:hover { background: var(--gold); color: #000; transform: skewX(-10deg); }
+
+        /* THE DYNAMIC TREE MESH */
+        #mesh-canvas {
+            width: 100vw; height: 100vh;
+            display: flex; justify-content: center; align-items: center;
+            transform: rotateX(20deg);
+        }
+
+        .data-node {
+            position: absolute;
+            padding: 15px 25px;
+            background: var(--carbon);
+            border: 1px solid var(--gold);
+            font-size: 0.8rem;
+            animation: emerge 0.5s ease-out forwards;
+            box-shadow: 10px 10px 0px rgba(255, 193, 7, 0.1);
+        }
+
+        @keyframes emerge { from { opacity: 0; transform: translateZ(-100px); } to { opacity: 1; transform: translateZ(0); } }
+
+        .node-label { color: var(--gold); font-weight: 900; margin-bottom: 5px; display: block; }
+        .node-path { font-size: 0.6rem; opacity: 0.5; }
+
+        /* TRAVERSAL OVERLAY */
+        .path-overlay {
+            position: absolute; bottom: 30px; right: 30px;
+            font-size: 0.8rem; color: var(--gold); text-align: right;
+            max-width: 500px; line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="custom-cursor"></div>
+
+    <div class="corner-node top-left">
+        <span class="tag">ALLOCATE_NODE</span>
+        <input type="text" id="nodeIn" placeholder="DIR_NAME">
+        <button class="btn-iso" onclick="addNode()">PUSH_TO_TREE</button>
+    </div>
+
+    <div class="corner-node top-right">
+        <span class="tag">SENTINEL_SYSTEM_V6</span>
+        <div style="font-size: 0.7rem; opacity: 0.6;">BINARY_TREE_HIERARCHY</div>
+        <div style="font-size: 0.6rem; color:var(--gold); margin-top:5px;">SIT_NAGPUR_LAB_01</div>
+    </div>
+
+    <div class="corner-node bottom-left">
+        <span class="tag">TRAVERSAL_ENGINE</span>
+        <div style="display:flex; gap:10px;">
+            <button class="btn-iso" onclick="runInOrder()">IN_ORDER</button>
+            <button class="btn-iso" onclick="runPostOrder()">POST_ORDER</button>
+        </div>
+    </div>
+
+    <div class="path-overlay" id="pathOut">
+        // AWAITING_TRAVERSAL_COMMAND
+    </div>
+
+    <div id="mesh-canvas">
+        </div>
+
+    <script>
+        const cursor = document.getElementById('custom-cursor');
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+
+        // BINARY TREE LOGIC
+        class Node {
+            constructor(name) {
+                this.name = name;
+                this.left = null;
+                this.right = null;
+                this.pos = { x: 0, y: 0 };
+            }
+        }
+
+        let root = new Node("ROOT_DIR");
+        let allNodes = [root];
+
+        function addNode() {
+            const val = document.getElementById('nodeIn').value.trim();
+            if (!val) return;
+            
+            // Level-order insert
+            let q = [root];
+            while(q.length > 0) {
+                let temp = q.shift();
+                if(!temp.left) { temp.left = new Node(val); allNodes.push(temp.left); break; }
+                else q.push(temp.left);
+                if(!temp.right) { temp.right = new Node(val); allNodes.push(temp.right); break; }
+                else q.push(temp.right);
+            }
+            document.getElementById('nodeIn').value = "";
+            renderMesh();
+        }
+
+        function renderMesh() {
+            const canvas = document.getElementById('mesh-canvas');
+            canvas.innerHTML = "";
+            
+            allNodes.forEach((node, i) => {
+                const div = document.createElement('div');
+                div.className = 'data-node';
+                
+                // Spreading nodes out in a pseudo-isometric grid
+                const x = (i % 3 - 1) * 300 + (Math.random() * 40);
+                const y = (Math.floor(i / 3) - 1) * 200 + (Math.random() * 40);
+                
+                div.style.left = `calc(50% + ${x}px)`;
+                div.style.top = `calc(50% + ${y}px)`;
+                
+                div.innerHTML = `
+                    <span class="node-label">${node.name}</span>
+                    <span class="node-path">0x${Math.random().toString(16).slice(2,6)}</span>
+                `;
+                canvas.appendChild(div);
+            });
+        }
+
+        // TRAVERSALS
+        let path = [];
+        function inOrder(n) { if(n) { inOrder(n.left); path.push(n.name); inOrder(n.right); } }
+        function postOrder(n) { if(n) { postOrder(n.left); postOrder(n.right); path.push(n.name); } }
+
+        function runInOrder() { path = []; inOrder(root); showPath("IN_ORDER"); }
+        function runPostOrder() { path = []; postOrder(root); showPath("POST_ORDER"); }
+
+        function showPath(type) {
+            document.getElementById('pathOut').innerText = `// ${type}_TRACE: ` + path.join(" -> ");
+        }
+
+        renderMesh();
+
+        // Cursor scaling
+        document.addEventListener('mouseover', (e) => {
+            if(e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') {
+                cursor.style.transform = 'translate(-50%, -50%) scale(3) rotate(135deg)';
+            } else {
+                cursor.style.transform = 'translate(-50%, -50%) scale(1) rotate(45deg)';
+            }
+        });
+    </script>
+</body>
+</html>
