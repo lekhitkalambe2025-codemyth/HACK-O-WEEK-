@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prism_View | Complete_Gallery</title>
+    <style>
+        :root { 
+            --accent: #ffffff; 
+            --bg: #050505; 
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+        
+        * { cursor: none !important; margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            background: var(--bg); 
+            color: white; 
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* NEON WHITE DOT CURSOR */
+        #custom-cursor {
+            width: 8px; height: 8px; background: #fff; border-radius: 50%;
+            position: fixed; pointer-events: none; z-index: 10001;
+            transform: translate(-50%, -50%); box-shadow: 0 0 15px #fff;
+        }
+
+        .container { max-width: 1600px; margin: 0 auto; padding: 60px 5%; }
+
+        .header { margin-bottom: 60px; border-left: 2px solid var(--accent); padding-left: 30px; }
+        .header h1 { font-size: 2.5rem; font-weight: 200; letter-spacing: 10px; text-transform: uppercase; }
+        .header p { color: #555; font-size: 0.8rem; margin-top: 10px; letter-spacing: 3px; }
+
+        /* FIXED 3-COLUMN GRID FOR VISIBILITY */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* Changed to force 3 columns */
+            gap: 15px;
+            margin-bottom: 80px;
+        }
+
+        .gallery-item {
+            position: relative;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            height: 250px; /* Reduced height to ensure all 3 rows fit on one screen */
+            overflow: hidden;
+            transition: 0.4s ease;
+        }
+
+        .gallery-item img {
+            width: 100%; height: 100%; object-fit: cover;
+            transition: 0.6s ease; opacity: 0.7;
+        }
+
+        .gallery-item:hover img { opacity: 1; transform: scale(1.08); }
+        .gallery-item:hover { border-color: var(--accent); }
+
+        /* ADDITIONAL CONTENT SECTION */
+        .content-block {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            padding: 80px 0;
+            border-top: 1px solid #111;
+        }
+
+        .content-block h2 { font-weight: 300; letter-spacing: 3px; margin-bottom: 20px; color: #fff; }
+        .content-block p { color: #888; line-height: 1.8; font-size: 0.95rem; }
+
+        /* LIGHTBOX */
+        #lightbox {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.98); z-index: 2000; backdrop-filter: blur(15px);
+            justify-content: center; align-items: center;
+        }
+
+        #lightbox img {
+            max-width: 80%; max-height: 80%; border: 1px solid #222;
+            animation: emerge 0.3s ease;
+        }
+
+        @keyframes emerge { from { transform: scale(0.95); opacity: 0; } }
+
+        .close-btn {
+            position: absolute; top: 30px; right: 30px; background: none; 
+            border: 1px solid #fff; color: #fff; padding: 10px 20px; font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="custom-cursor"></div>
+
+    <div class="container">
+        <header class="header">
+            <h1>PRISM_VIEW</h1>
+            <p>// OPTICAL_ARCHIVE_v2.0 // 09_RECORDS_ACTIVE</p>
+        </header>
+
+        <div class="gallery-grid" id="mainGrid"></div>
+
+        <section class="content-block">
+            <div class="info-box">
+                <h2>VISUAL_PHILOSOPHY</h2>
+                <p>Prism_View is more than a gallery; it is a study of light as a data stream. By capturing photons in high-contrast environments, we translate physical reality into digital assets. Every image in this collection is optimized for 4K resolution and color-corrected for maximum dynamic range.</p>
+            </div>
+            <div class="info-box">
+                <h2>SYSTEM_SPECIFICATIONS</h2>
+                <p>Camera: Phase_One XF <br> Lens: 80mm Schneider-Kreuznach <br> Processing: Custom Python-based Image-Engine <br> Encoding: Lossless RAW to WebP.</p>
+            </div>
+        </section>
+    </div>
+
+    <div id="lightbox" onclick="closeLB()">
+        <button class="close-btn">ESC_VIEW [X]</button>
+        <img id="lbImg" src="">
+    </div>
+
+    <script>
+        const dot = document.getElementById('custom-cursor');
+        document.addEventListener('mousemove', (e) => {
+            dot.style.left = e.clientX + 'px';
+            dot.style.top = e.clientY + 'px';
+        });
+
+        const photos = [
+            { src: "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=800", id: "REC_01" },
+            { src: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800", id: "REC_02" },
+            { src: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800", id: "REC_03" },
+            { src: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800", id: "REC_04" },
+            { src: "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=800", id: "REC_05" },
+            { src: "https://cdn.pixabay.com/photo/2023/07/01/18/21/water-8100724_640.jpg?w=800", id: "REC_06" },
+            { src: "https://img.freepik.com/free-photo/beautiful-cherry-blossoms-trees-blooming-spring_335224-878.jpg?w=800", id: "REC_07" },
+            { src: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800", id: "REC_08" },
+            { src: "https://images.unsplash.com/photo-1500673922987-e212871fec22?w=800", id: "REC_09" }
+        ];
+
+        const grid = document.getElementById('mainGrid');
+        photos.forEach(p => {
+            const div = document.createElement('div');
+            div.className = 'gallery-item';
+            div.innerHTML = `
+                <img src="${p.src}" onclick="openLB('${p.src}')">
+                <div style="position:absolute; bottom:10px; left:10px; font-size:0.6rem; color:#555;">${p.id}</div>
+            `;
+            grid.appendChild(div);
+        });
+
+        function openLB(src) {
+            document.getElementById('lbImg').src = src;
+            document.getElementById('lightbox').style.display = 'flex';
+        }
+
+        function closeLB() {
+            document.getElementById('lightbox').style.display = 'none';
+        }
+
+        document.addEventListener('mouseover', (e) => {
+            if(e.target.tagName === 'IMG' || e.target.tagName === 'BUTTON') {
+                dot.style.transform = 'translate(-50%, -50%) scale(3)';
+            } else {
+                dot.style.transform = 'translate(-50%, -50%) scale(1)';
+            }
+        });
+    </script>
+</body>
+</html>
