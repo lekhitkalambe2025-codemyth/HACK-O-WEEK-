@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pathfinder | Trip Chronicles</title>
+    <style>
+        :root { 
+            --accent: #ffae00; /* Gold/Compass Theme */
+            --glass: rgba(255, 255, 255, 0.05); 
+            --bg: #080808; 
+        }
+        
+        /* HIDE DEFAULT CURSOR GLOBALLY */
+        * { cursor: none !important; margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            background: var(--bg); 
+            color: #ddd; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden; /* Handled by container scroll */
+        }
+
+        /* NEON WHITE STYLISH CURSOR */
+        #custom-cursor {
+            width: 10px; height: 10px; background: #fff; border-radius: 50%;
+            position: fixed; pointer-events: none; z-index: 10001;
+            transform: translate(-50%, -50%); box-shadow: 0 0 15px #fff, 0 0 30px #fff;
+            transition: transform 0.15s ease-out;
+        }
+
+        /* NAVIGATION HUD */
+        .nav-hud {
+            position: fixed; top: 30px; left: 50%; transform: translateX(-50%);
+            background: rgba(20, 20, 20, 0.8); backdrop-filter: blur(15px);
+            padding: 15px 40px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.1);
+            display: flex; gap: 30px; z-index: 1000;
+        }
+
+        .nav-hud a { 
+            color: #888; text-decoration: none; font-size: 0.75rem; 
+            letter-spacing: 2px; transition: 0.3s; font-family: monospace;
+        }
+
+        .nav-hud a:hover { color: var(--accent); text-shadow: 0 0 10px var(--accent); }
+
+        /* STORY CONTAINER WITH SCROLL SNAP */
+        .story-container {
+            height: 100vh; scroll-snap-type: y mandatory; overflow-y: scroll;
+            scrollbar-width: none; /* Firefox */
+        }
+        .story-container::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+
+        .story-section {
+            height: 100vh; scroll-snap-align: start;
+            position: relative; display: flex; align-items: center; padding: 0 10%;
+            background-size: cover; background-position: center;
+            background-attachment: fixed;
+        }
+
+        /* READABILITY OVERLAY */
+        .story-section::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(90deg, #000 25%, transparent 100%);
+        }
+
+        .story-content { position: relative; z-index: 10; max-width: 550px; }
+
+        .story-content h2 { 
+            font-size: 4rem; color: #fff; margin-bottom: 20px; 
+            border-left: 5px solid var(--accent); padding-left: 25px;
+            letter-spacing: -2px;
+        }
+
+        .story-content p { line-height: 1.8; color: #bbb; margin-bottom: 35px; font-size: 1.1rem; }
+
+        .meta-data { font-family: monospace; color: var(--accent); margin-bottom: 15px; font-size: 0.8rem; letter-spacing: 1px; }
+
+        .log-btn {
+            background: transparent; border: 1px solid #fff; color: #fff; 
+            padding: 12px 35px; letter-spacing: 2px; font-family: monospace;
+            transition: 0.3s;
+        }
+        .log-btn:hover { background: #fff; color: #000; }
+
+        /* EXPANSION OVERLAY (GLASSMORPHISM) */
+        #blog-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(5, 5, 5, 0.95); z-index: 2000; backdrop-filter: blur(25px); 
+            padding: 80px 20px; overflow-y: auto; animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .overlay-card {
+            max-width: 850px; margin: 0 auto; background: var(--glass);
+            padding: 60px; border-radius: 30px; border: 1px solid var(--glass-border);
+        }
+
+        .close-btn {
+            position: fixed; top: 40px; right: 40px; background: transparent; 
+            border: 1px solid var(--accent); color: var(--accent); 
+            padding: 10px 20px; font-family: monospace; transition: 0.3s;
+        }
+        .close-btn:hover { background: var(--accent); color: #000; }
+
+    </style>
+</head>
+<body>
+
+    <div id="custom-cursor"></div>
+
+    <div id="blog-overlay">
+        <button class="close-btn" onclick="closeLog()">CLOSE_LOG [X]</button>
+        <div class="overlay-card">
+            <h1 id="overlay-title" style="color:var(--accent); margin-bottom:30px; letter-spacing:5px; font-size: 2.5rem;"></h1>
+            <p id="overlay-text" style="font-size:1.25rem; color:#ccc; line-height: 2.2;"></p>
+        </div>
+    </div>
+
+    <nav class="nav-hud">
+        <a href="#trip1">01_HIMALAYAS</a>
+        <a href="#trip2">02_KYOTO</a>
+        <a href="#trip3">03_ICELAND</a>
+    </nav>
+
+    <div class="story-container">
+        <section class="story-section" id="trip1" style="background-image: url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1600');">
+            <div class="story-content">
+                <div class="meta-data">COORD: 31.1048° N, 77.1734° E | STATUS: ALTITUDE_GAIN</div>
+                <h2>THE HIGH PASS</h2>
+                <p>Crossing the Rohtang Pass wasn't just a physical journey; it was a mental recalibration. The peaks stood as giant logic gates against the sky.</p>
+                <button class="log-btn" onclick="openLog('trip1', 'THE HIMALAYAN EXPEDITION')">READ_LOG</button>
+            </div>
+        </section>
+
+        <section class="story-section" id="trip2" style="background-image: url('https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1600');">
+            <div class="story-content">
+                <div class="meta-data">COORD: 35.0116° N, 135.7681° E | STATUS: ZEN_SYNC</div>
+                <h2>ZEN ARCHITECTURE</h2>
+                <p>In Kyoto, silence has a frequency. The temple gardens follow geometric perfections that rival the most complex circuit designs.</p>
+                <button class="log-btn" onclick="openLog('trip2', 'KYOTO: ZEN LOGIC')">READ_LOG</button>
+            </div>
+        </section>
+
+        <section class="story-section" id="trip3" style="background-image: url('https://images.unsplash.com/photo-1476610182048-b716b8518aae?w=1600');">
+            <div class="story-content">
+                <div class="meta-data">COORD: 64.1265° N, 21.8174° W | STATUS: ARCTIC_CORE</div>
+                <h2>AURORA STREAMS</h2>
+                <p>Standing under the Northern Lights felt like watching a live visualization of electromagnetic interference in the Earth's atmosphere.</p>
+                <button class="log-btn" onclick="openLog('trip3', 'ICELAND: THE FROZEN CODE')">READ_LOG</button>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // STYLISH CURSOR LOGIC
+        const dot = document.getElementById('custom-cursor');
+        document.addEventListener('mousemove', (e) => {
+            dot.style.left = e.clientX + 'px';
+            dot.style.top = e.clientY + 'px';
+        });
+
+        // BLOG DATA STORAGE
+        const fullStories = {
+            trip1: "The Himalayas offered a challenge that binary code never could. As I ascended toward the 4500m mark, the sheer logic of nature became clear. Every jagged peak was a data point in a grander design. The air was crisp, and the silence was absolute, much like the quiet before a successful compile. I spent three days trekking through snow-blind passes where survival depended on the precision of my gear and the steadiness of my breath.",
+            trip2: "In Kyoto, the Zen gardens aren't just for show—they are physical manifestations of clean architecture. The way the sand is raked follows a specific algorithmic pattern that brings peace to the mind. Walking through the Fushimi Inari gates felt like traveling through a series of nested loops, each orange gate representing a step deeper into the history of the island. It was a lesson in how simplicity can be the most complex form of beauty.",
+            trip3: "Iceland is a land where the earth's internal hardware is exposed. Geysers and volcanic vents act like thermal exhaust ports for the planet. Watching the Aurora Borealis was like seeing the sky's source code flickering in shades of emerald and sapphire. The cold was a constant variable, but the visual output of the landscape made every struggle worth it. It felt like standing at the edge of the world's original server room."
+        };
+
+        // OPEN LOG MODAL
+        function openLog(tripId, title) {
+            const overlay = document.getElementById('blog-overlay');
+            document.getElementById('overlay-title').innerText = title;
+            document.getElementById('overlay-text').innerText = fullStories[tripId];
+            overlay.style.display = 'block';
+            dot.style.transform = 'translate(-50%, -50%) scale(1.5)';
+        }
+
+        // CLOSE LOG MODAL
+        function closeLog() {
+            document.getElementById('blog-overlay').style.display = 'none';
+            dot.style.transform = 'translate(-50%, -50%) scale(1)';
+        }
+
+        // HOVER EFFECTS FOR LINKS AND BUTTONS
+        document.querySelectorAll('button, a').forEach(el => {
+            el.addEventListener('mouseenter', () => dot.style.transform = 'translate(-50%, -50%) scale(3)');
+            el.addEventListener('mouseleave', () => dot.style.transform = 'translate(-50%, -50%) scale(1)');
+        });
+    </script>
+</body>
+</html>
