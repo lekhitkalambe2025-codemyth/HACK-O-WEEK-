@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atlas_Dir | Acid_Search</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&family=Syne:wght@800&display=swap');
+
+        :root { 
+            --acid-lime: #ccff00; 
+            --deep-purple: #240046;
+            --hot-pink: #ff0054;
+            --dark: #121212;
+        }
+        
+        * { cursor: none !important; margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            background: var(--dark); 
+            color: #fff; 
+            font-family: 'Space Grotesk', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* LIQUID LIME CURSOR */
+        #custom-cursor {
+            width: 20px; height: 20px; background: var(--acid-lime); border-radius: 50%;
+            position: fixed; pointer-events: none; z-index: 10001;
+            transform: translate(-50%, -50%); mix-blend-mode: difference;
+            transition: transform 0.1s ease, width 0.3s, height 0.3s;
+        }
+
+        /* MARQUEE HEADER */
+        .marquee {
+            background: var(--acid-lime); color: #000; padding: 10px 0;
+            overflow: hidden; white-space: nowrap; font-family: 'Syne', sans-serif;
+            border-bottom: 5px solid #000;
+        }
+        .marquee-content { display: inline-block; animation: scroll 20s linear infinite; font-size: 1.2rem; }
+        @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+        .main-grid {
+            display: grid; grid-template-columns: 1fr 1.5fr;
+            min-height: calc(100vh - 50px);
+        }
+
+        /* LEFT: THE INPUT TERMINAL */
+        .input-chamber {
+            padding: 60px; border-right: 5px solid var(--acid-lime);
+            background: linear-gradient(45deg, #1a1a1a, #000);
+        }
+        .input-chamber h2 { font-size: 3rem; font-family: 'Syne', sans-serif; line-height: 0.9; margin-bottom: 40px; color: var(--acid-lime); }
+
+        .field-box { margin-bottom: 30px; }
+        label { color: var(--hot-pink); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 3px; display: block; margin-bottom: 10px; }
+        
+        input {
+            width: 100%; background: transparent; border: 3px solid #333; padding: 20px;
+            color: var(--acid-lime); font-size: 1.2rem; outline: none; transition: 0.3s;
+        }
+        input:focus { border-color: var(--acid-lime); box-shadow: 10px 10px 0px var(--acid-lime); }
+
+        .btn-acid {
+            width: 100%; padding: 20px; background: var(--acid-lime); color: #000;
+            border: none; font-weight: 900; font-size: 1.1rem; text-transform: uppercase;
+            box-shadow: 10px 10px 0px var(--hot-pink); transition: 0.2s;
+        }
+        .btn-acid:active { transform: translate(5px, 5px); box-shadow: 2px 2px 0px var(--hot-pink); }
+
+        /* RIGHT: THE DATA FLOW */
+        .data-flow { padding: 60px; overflow-y: auto; background: #000; }
+        
+        .search-sticky {
+            position: sticky; top: 0; background: #000; padding: 20px 0; z-index: 10;
+            border-bottom: 2px solid #222; margin-bottom: 40px;
+        }
+
+        .contact-node {
+            background: #111; border: 2px solid #222; padding: 30px; border-radius: 0;
+            margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;
+            transition: 0.4s; position: relative;
+        }
+        .contact-node:hover { border-color: var(--acid-lime); transform: skewX(-2deg); background: #1a1a1a; }
+        
+        .node-info b { font-size: 1.8rem; display: block; color: #fff; }
+        .node-info span { color: var(--hot-pink); font-family: monospace; }
+
+        .highlight-node { border: 4px solid var(--acid-lime) !important; box-shadow: 15px 15px 0px var(--hot-pink); }
+
+        /* SCROLL ANIMATION */
+        .contact-node { opacity: 0; transform: translateX(50px); }
+        .contact-node.in-view { opacity: 1; transform: translateX(0); }
+
+    </style>
+</head>
+<body>
+
+    <div id="custom-cursor"></div>
+
+    <div class="marquee">
+        <div class="marquee-content">
+            BINARY_SEARCH_ACTIVE // O(LOG N) // NAGPUR_SIT_CORE // SYSTEM_READY // BINARY_SEARCH_ACTIVE // O(LOG N) // NAGPUR_SIT_CORE // SYSTEM_READY //
+        </div>
+    </div>
+
+    <div class="main-grid">
+        <div class="input-chamber">
+            <h2>ADD<br>RECORD</h2>
+            <div class="field-box">
+                <label>Identifier</label>
+                <input type="text" id="nameIn" placeholder="NAME">
+            </div>
+            <div class="field-box">
+                <label>Data_Stream</label>
+                <input type="text" id="phoneIn" placeholder="PHONE">
+            </div>
+            <button class="btn-acid" onclick="add()">COMMIT_DATA</button>
+            
+            <div style="margin-top: 60px; font-size: 0.7rem; color: #555; line-height: 2;">
+                // SYSTEM_TRACE: Sorting array alphabetically.<br>
+                // ENGINE: Initializing Binary Search logic for O(log n) efficiency.
+            </div>
+        </div>
+
+        <div class="data-flow" id="flow">
+            <div class="search-sticky">
+                <label>Live_Binary_Lookup</label>
+                <input type="text" id="searchIn" placeholder="SEARCH_DATABASE..." oninput="find()">
+                <p id="feedback" style="margin-top:15px; font-size: 0.8rem; color: var(--acid-lime); font-family: monospace;"></p>
+            </div>
+
+            <div id="nodeContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        const dot = document.getElementById('custom-cursor');
+        document.addEventListener('mousemove', (e) => {
+            dot.style.left = e.clientX + 'px';
+            dot.style.top = e.clientY + 'px';
+        });
+
+        let data = [
+            { name: "Abhishek", tel: "9823000001" },
+            { name: "Chetan", tel: "9823000002" },
+            { name: "Gaurav", tel: "9823000003" },
+            { name: "Kunal", tel: "9823000004" },
+            { name: "Rahul", tel: "9823000005" }
+        ];
+
+        function draw(match = "") {
+            const container = document.getElementById('nodeContainer');
+            container.innerHTML = "";
+            data.sort((a,b) => a.name.localeCompare(b.name));
+
+            data.forEach((item, i) => {
+                const div = document.createElement('div');
+                div.className = `contact-node ${item.name === match ? 'highlight-node' : ''}`;
+                div.innerHTML = `
+                    <div class="node-info">
+                        <b>${item.name}</b>
+                        <span>${item.tel}</span>
+                    </div>
+                    <div style="font-size: 2rem; opacity: 0.1;">#0${i+1}</div>
+                `;
+                container.appendChild(div);
+                setTimeout(() => div.classList.add('in-view'), i * 100);
+            });
+        }
+
+        function add() {
+            const n = document.getElementById('nameIn').value;
+            const p = document.getElementById('phoneIn').value;
+            if(n && p) { data.push({name:n, tel:p}); draw(); }
+        }
+
+        function find() {
+            const q = document.getElementById('searchIn').value.toLowerCase();
+            const log = document.getElementById('feedback');
+            if(!q) { log.innerText = "WAITING..."; draw(); return; }
+
+            let low = 0, high = data.length - 1, steps = 0, found = "";
+
+            while(low <= high) {
+                steps++;
+                let mid = Math.floor((low + high)/2);
+                if(data[mid].name.toLowerCase() === q) { found = data[mid].name; break; }
+                else if(data[mid].name.toLowerCase() < q) low = mid + 1;
+                else high = mid - 1;
+            }
+
+            if(found) {
+                log.innerText = `HIT: ${found} found in ${steps} ops`;
+                draw(found);
+                document.querySelector('.highlight-node').scrollIntoView({behavior:'smooth', block:'center'});
+            } else {
+                log.innerText = "MISS: RECORD_NOT_FOUND";
+            }
+        }
+
+        draw();
+
+        // Interaction
+        document.addEventListener('mouseover', (e) => {
+            if(e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') {
+                dot.style.width = '60px'; dot.style.height = '60px';
+                dot.style.background = 'transparent'; dot.style.border = '2px solid var(--acid-lime)';
+            } else {
+                dot.style.width = '20px'; dot.style.height = '20px';
+                dot.style.background = 'var(--acid-lime)'; dot.style.border = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
