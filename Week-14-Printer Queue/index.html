@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus_Print | FIFO Queue Logic</title>
+    <style>
+        :root { 
+            --primary: #00f2fe; 
+            --secondary: #4facfe;
+            --bg: #f0f4f8;
+            --glass: rgba(255, 255, 255, 0.7);
+            --border: rgba(255, 255, 255, 0.3);
+            --text: #2c3e50;
+        }
+        
+        * { cursor: none !important; margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
+            color: var(--text); 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* PRECISION GLASS CURSOR */
+        #custom-cursor {
+            width: 12px; height: 12px; background: #fff; border-radius: 50%;
+            position: fixed; pointer-events: none; z-index: 10001;
+            transform: translate(-50%, -50%); box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
+            transition: transform 0.1s ease-out;
+        }
+
+        .terminal-container {
+            width: 1000px;
+            background: var(--glass);
+            backdrop-filter: blur(25px);
+            border-radius: 30px;
+            padding: 40px;
+            border: 1px solid var(--border);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 30px;
+        }
+
+        /* SIDEBAR CONTROLS */
+        .sidebar h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 5px; }
+        .sidebar p { font-size: 0.7rem; color: #576574; font-family: monospace; margin-bottom: 30px; }
+
+        .control-group label { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: #546e7a; display: block; margin-bottom: 8px; }
+        input {
+            width: 100%; padding: 14px; border: 1px solid rgba(0,0,0,0.05); border-radius: 12px;
+            background: rgba(255,255,255,0.5); margin-bottom: 20px; outline: none; font-size: 0.95rem;
+        }
+
+        .btn {
+            width: 100%; padding: 14px; border: none; border-radius: 10px;
+            font-weight: 700; font-size: 0.8rem; transition: 0.3s; text-transform: uppercase;
+        }
+        .btn-enqueue { background: var(--text); color: #fff; }
+        .btn-dequeue { background: #fff; border: 1px solid #ddd; color: var(--text); margin-top: 10px; }
+        .btn:disabled { opacity: 0.3; pointer-events: none; }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+
+        /* ACTIVE PRINTER HEAD */
+        .printer-status {
+            background: #fff; border-radius: 20px; padding: 25px; text-align: center;
+            margin-bottom: 25px; border: 1px solid rgba(0,0,0,0.03);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+        }
+        .status-tag { font-size: 0.6rem; font-weight: 900; color: #00d2ff; text-transform: uppercase; margin-bottom: 8px; display: block; }
+        #processing-job { font-size: 1.2rem; font-weight: 700; color: #2d3436; min-height: 1.5em; }
+
+        /* QUEUE VISUALIZER */
+        .queue-flow {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            overflow-x: auto;
+            padding: 20px;
+            background: rgba(0,0,0,0.03);
+            border-radius: 20px;
+            min-height: 150px;
+        }
+        .queue-item {
+            background: #fff; padding: 15px 25px; border-radius: 12px;
+            border-left: 5px solid var(--secondary); font-size: 0.85rem; font-weight: 600;
+            white-space: nowrap; animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        @keyframes slideIn { from { transform: translateX(50px); opacity: 0; } }
+
+        /* FOOTER SPECS */
+        .specs {
+            grid-column: span 2; margin-top: 30px; padding-top: 20px;
+            border-top: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between;
+            font-family: monospace; font-size: 0.7rem; color: #546e7a;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="custom-cursor"></div>
+
+    <div class="terminal-container">
+        <div class="sidebar">
+            <h1>Nexus_Print</h1>
+            <p>// FIFO_QUEUE_SYNC_v3.0 //</p>
+            
+            <div class="control-group">
+                <label>Job Description</label>
+                <input type="text" id="jobInput" placeholder="e.g., SIT_Final_Thesis.pdf">
+                <button class="btn btn-enqueue" onclick="enqueue()">ENQUEUE_JOB</button>
+                <button class="btn btn-dequeue" id="deqBtn" onclick="dequeue()" disabled>PROCESS_NEXT [DEQUEUE]</button>
+            </div>
+
+            <div style="margin-top: 30px; padding: 20px; background: rgba(255,255,255,0.3); border-radius: 15px; border: 1px solid rgba(255,255,255,0.5);">
+                <p style="font-size: 0.7rem; color: #2c3e50; line-height: 1.6;">
+                    <b>Algorithm Trace:</b> The system utilizes a linear <b>First-In-First-Out</b> queue. 
+                    The head of the queue is processed while new entries are appended to the rear.
+                </p>
+            </div>
+        </div>
+
+        <div class="main-display">
+            <div class="printer-status">
+                <span class="status-tag">Active_Processing_Head</span>
+                <div id="processing-job">SYSTEM_IDLE</div>
+            </div>
+
+            <label style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: #546e7a; margin-left: 10px;">Queue_Buffer_Stream</label>
+            <div class="queue-flow" id="queueStream">
+                </div>
+
+            <div class="specs">
+                <span>STATUS: ONLINE</span>
+                <span>NODE_ID: NAGPUR_SIT_PRINTER_01</span>
+                <span>LATENCY: 0.002ms</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dot = document.getElementById('custom-cursor');
+        document.addEventListener('mousemove', (e) => {
+            dot.style.left = e.clientX + 'px';
+            dot.style.top = e.clientY + 'px';
+        });
+
+        // QUEUE LOGIC
+        let printerQueue = [];
+
+        function render() {
+            const stream = document.getElementById('queueStream');
+            const deqBtn = document.getElementById('deqBtn');
+            
+            stream.innerHTML = printerQueue.length > 0 
+                ? printerQueue.map(job => `<div class="queue-item">${job}</div>`).join('')
+                : "<p style='color:#7f8c8d; font-family:monospace; margin:auto;'>[ BUFFER_EMPTY: AWAITING_JOBS ]</p>";
+
+            deqBtn.disabled = printerQueue.length === 0;
+        }
+
+        function enqueue() {
+            const input = document.getElementById('jobInput');
+            const job = input.value.trim();
+            if (!job) return;
+
+            printerQueue.push(job); // Add to back
+            input.value = "";
+            render();
+        }
+
+        function dequeue() {
+            if (printerQueue.length === 0) return;
+
+            const job = printerQueue.shift(); // Remove from front
+            const statusBox = document.getElementById('processing-job');
+            
+            // Visual feedback for processing
+            statusBox.style.color = "#4facfe";
+            statusBox.innerText = `PRINTING: ${job}...`;
+            
+            setTimeout(() => {
+                statusBox.style.color = "#2d3436";
+                statusBox.innerText = "SYSTEM_IDLE";
+            }, 3000);
+
+            render();
+        }
+
+        // CURSOR INTERACTION
+        document.addEventListener('mouseover', (e) => {
+            if(e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') {
+                dot.style.transform = 'translate(-50%, -50%) scale(4)';
+                dot.style.background = 'transparent';
+                dot.style.border = '1px solid #fff';
+            } else {
+                dot.style.transform = 'translate(-50%, -50%) scale(1)';
+                dot.style.background = '#fff';
+                dot.style.border = 'none';
+            }
+        });
+
+        render();
+    </script>
+</body>
+</html>
