@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura_Station | Light_Mode_Meteorology</title>
+    <style>
+        :root { 
+            --accent: #000000; 
+            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            --glass: rgba(255, 255, 255, 0.4);
+            --border: rgba(0, 0, 0, 0.08);
+            --hot: #d63031;
+            --mild: #0984e3;
+            --warn: #e17055;
+        }
+        
+        /* HIDE DEFAULT CURSOR */
+        * { cursor: none !important; margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            background: var(--bg-gradient); 
+            color: #2d3436; 
+            font-family: 'Inter', sans-serif;
+            padding: 40px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* NEON BLACK DOT CURSOR */
+        #custom-cursor {
+            width: 8px; height: 8px; background: #000; border-radius: 50%;
+            position: fixed; pointer-events: none; z-index: 10001;
+            transform: translate(-50%, -50%); box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            transition: transform 0.1s ease-out;
+        }
+
+        header { border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 20px; }
+        header h1 { letter-spacing: 12px; font-weight: 200; color: #000; text-transform: uppercase; }
+        header p { color: #636e72; font-family: monospace; font-size: 0.75rem; }
+
+        .city-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+
+        /* THERMAL GRID CARD */
+        .node-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            padding: 35px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+            background-image: linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px), 
+                              linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            transition: 0.3s;
+        }
+
+        .node-card:hover { transform: translateY(-10px); border-color: rgba(0,0,0,0.2); }
+
+        .node-nagpur { border-top: 6px solid var(--hot); }
+        .node-bhandara { border-top: 6px solid var(--warn); }
+        .node-pune { border-top: 6px solid var(--mild); }
+
+        .city-title { font-size: 1.6rem; letter-spacing: 4px; margin-bottom: 15px; text-transform: uppercase; font-weight: 300; }
+        .main-temp { font-size: 4rem; font-weight: 200; margin-bottom: 15px; color: #000; }
+
+        /* DATA MATRIX */
+        .data-matrix {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #636e72;
+        }
+        .data-matrix div b { color: #000; }
+
+        /* WEEKLY CHART */
+        .week-strip {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+        .day-node { text-align: center; font-size: 0.7rem; color: #b2bec3; }
+        .day-bar { width: 6px; background: #dfe6e9; margin: 8px auto; border-radius: 3px; position: relative; height: 40px;}
+        .bar-fill { width: 100%; border-radius: 3px; position: absolute; bottom: 0; }
+
+        /* ACTIVITY SECTION */
+        .activity-log {
+            margin-top: 30px;
+            background: rgba(0, 0, 0, 0.03);
+            padding: 18px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            color: #2d3436;
+            line-height: 1.6;
+            border-left: 4px solid #000;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="custom-cursor"></div>
+
+    <header>
+        <h1>AURA_STATION</h1>
+        <p>// LOCATION_NODES: NAGPUR / BHANDARA / PUNE //</p>
+    </header>
+
+    <div class="city-grid">
+        <div class="node-card node-nagpur">
+            <h2 class="city-title">Nagpur</h2>
+            <div class="main-temp">42°C</div>
+            <div class="data-matrix">
+                <div>AQI: <b>142</b></div>
+                <div>WIND: <b>18km/h</b></div>
+                <div>UV: <b>EXTREME</b></div>
+                <div>HUMIDITY: <b>12%</b></div>
+                <div>PRESSURE: <b>1012hPa</b></div>
+                <div>SUNSET: <b>18:52</b></div>
+            </div>
+            <div class="week-strip">
+                <div class="day-node">M <div class="day-bar"><div class="bar-fill" style="height:70%; background:var(--hot);"></div></div></div>
+                <div class="day-node">T <div class="day-bar"><div class="bar-fill" style="height:85%; background:var(--hot);"></div></div></div>
+                <div class="day-node">W <div class="day-bar"><div class="bar-fill" style="height:100%; background:var(--hot);"></div></div></div>
+                <div class="day-node">T <div class="day-bar"><div class="bar-fill" style="height:80%; background:var(--hot);"></div></div></div>
+                <div class="day-node">F <div class="day-bar"><div class="bar-fill" style="height:60%; background:var(--hot);"></div></div></div>
+            </div>
+            <div class="activity-log">
+                <b>DAILY_ROUTINE:</b> 
+                Peak thermal load detected. Perfect time for indoor C++ algorithm practice or finishing laundry in the shade. 
+                Evening suggestion: Grab a cold juice with friends once the sun dips below 15 degrees.
+            </div>
+        </div>
+
+        <div class="node-card node-bhandara">
+            <h2 class="city-title">Bhandara</h2>
+            <div class="main-temp">39°C</div>
+            <div class="data-matrix">
+                <div>AQI: <b>88</b></div>
+                <div>WIND: <b>10km/h</b></div>
+                <div>UV: <b>HIGH</b></div>
+                <div>HUMIDITY: <b>25%</b></div>
+                <div>PRESSURE: <b>1010hPa</b></div>
+                <div>SUNSET: <b>18:50</b></div>
+            </div>
+            <div class="week-strip">
+                <div class="day-node">M <div class="day-bar"><div class="bar-fill" style="height:65%; background:var(--warn);"></div></div></div>
+                <div class="day-node">T <div class="day-bar"><div class="bar-fill" style="height:75%; background:var(--warn);"></div></div></div>
+                <div class="day-node">W <div class="day-bar"><div class="bar-fill" style="height:80%; background:var(--warn);"></div></div></div>
+                <div class="day-node">T <div class="day-bar"><div class="bar-fill" style="height:70%; background:var(--warn);"></div></div></div>
+                <div class="day-node">F <div class="day-bar"><div class="bar-fill" style="height:65%; background:var(--warn);"></div></div></div>
+            </div>
+            <div class="activity-log">
+                <b>DAILY_ROUTINE:</b> 
+                High visibility—great for early morning grocery runs or organizing your Arduino components. 
+                Afternoon: Stay inside for a quick nap or document your Nanomaterial research while the fan is at max speed.
+            </div>
+        </div>
+
+        <div class="node-card node-pune">
+            <h2 class="city-title">Pune</h2>
+            <div class="main-temp">28°C</div>
+            <div class="data-matrix">
+                <div>AQI: <b>65</b></div>
+                <div>WIND: <b>22km/h</b></div>
+                <div>UV: <b>LOW</b></div>
+                <div>HUMIDITY: <b>55%</b></div>
+                <div>PRESSURE: <b>1008hPa</b></div>
+                <div>SUNSET: <b>19:05</b></div>
+            </div>
+            <div class="week-strip">
+                <div class="day-node">M <div class="day-bar"><div class="bar-fill" style="height:35%; background:var(--mild);"></div></div></div>
+                <div class="day-node">T <div class="day-bar"><div class="bar-fill" style="height:45%; background:var(--mild);"></div></div></div>
+                <div class="day-node">W <div class="day-bar"><div class="bar-fill" style="height:50%; background:var(--mild);"></div></div></div>
+                <div class="day-node">T <div class="day-bar"><div class="bar-fill" style="height:40%; background:var(--mild);"></div></div></div>
+                <div class="day-node">F <div class="day-bar"><div class="bar-fill" style="height:30%; background:var(--mild);"></div></div></div>
+            </div>
+            <div class="activity-log">
+                <b>DAILY_ROUTINE:</b> 
+                Optimal climate. Ideal for a walk in the park, outdoor DELD circuit prototyping, or a bike ride. 
+                Night: Great weather for a terrace dinner or debugging Python code with a cool breeze.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dot = document.getElementById('custom-cursor');
+        document.addEventListener('mousemove', (e) => {
+            dot.style.left = e.clientX + 'px';
+            dot.style.top = e.clientY + 'px';
+        });
+
+        document.addEventListener('mouseover', (e) => {
+            if(e.target.closest('.node-card')) {
+                dot.style.transform = 'translate(-50%, -50%) scale(4)';
+                dot.style.background = 'transparent';
+                dot.style.border = '1px solid #000';
+            } else {
+                dot.style.transform = 'translate(-50%, -50%) scale(1)';
+                dot.style.background = '#000';
+                dot.style.border = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
