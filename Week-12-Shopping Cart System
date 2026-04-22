@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flux_Cart | Solar Linked List</title>
+    <style>
+        :root { 
+            --primary: #ff4e50; 
+            --secondary: #f9d423;
+            --dark: #2d3436;
+            --glass: rgba(255, 255, 255, 0.95);
+        }
+        
+        /* HIDE DEFAULT CURSOR */
+        * { cursor: none !important; margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background-attachment: fixed;
+            color: var(--dark); 
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 60px 20px;
+        }
+
+        /* NEON SUNSET CURSOR */
+        #custom-cursor {
+            width: 12px; height: 12px; background: #fff; border-radius: 50%;
+            position: fixed; pointer-events: none; z-index: 10001;
+            transform: translate(-50%, -50%); box-shadow: 0 0 20px rgba(255,255,255,0.8);
+            mix-blend-mode: difference;
+            transition: transform 0.15s ease-out;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--glass);
+            border-radius: 40px;
+            padding: 50px;
+            box-shadow: 30px 30px 0px rgba(0,0,0,0.1);
+            border: 4px solid var(--dark);
+        }
+
+        .header-section { text-align: center; margin-bottom: 50px; }
+        .header-section h1 { font-size: 3rem; font-weight: 900; text-transform: uppercase; color: var(--dark); line-height: 1; }
+        .header-section p { font-weight: 600; color: var(--primary); margin-top: 10px; letter-spacing: 2px; }
+
+        /* INTERFACE BOX */
+        .interface { margin-bottom: 40px; }
+        .input-wrapper { display: flex; gap: 15px; margin-bottom: 20px; }
+        
+        input {
+            flex: 1; padding: 20px; border: 4px solid var(--dark); border-radius: 15px;
+            font-weight: 700; font-size: 1rem; outline: none; background: #fff;
+        }
+
+        .btn-stack { display: flex; gap: 15px; }
+        .action-btn {
+            flex: 1; padding: 15px; border: 4px solid var(--dark); border-radius: 15px;
+            font-weight: 900; text-transform: uppercase; transition: 0.2s;
+            box-shadow: 6px 6px 0px var(--dark);
+        }
+        .btn-head { background: #55efc4; color: #000; }
+        .btn-tail { background: #81ecec; color: #000; }
+        .action-btn:active { transform: translate(3px, 3px); box-shadow: 2px 2px 0px var(--dark); }
+
+        /* VERTICAL LINKED LIST */
+        .list-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .node-card {
+            width: 100%;
+            background: #fff;
+            border: 4px solid var(--dark);
+            border-radius: 20px;
+            padding: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            box-shadow: 10px 10px 0px rgba(0,0,0,0.05);
+            animation: slideDown 0.4s ease;
+        }
+
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } }
+
+        /* CONNECTOR LINES */
+        .node-card::after {
+            content: "↓ POINTER";
+            position: absolute;
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: 900;
+            font-size: 0.7rem;
+            color: var(--primary);
+        }
+        .node-card:last-child::after { content: "● NULL_TERMINATOR"; color: #aaa; }
+
+        .node-meta { font-family: 'Courier New', monospace; font-weight: bold; color: var(--primary); }
+        .node-title { font-size: 1.2rem; font-weight: 800; display: block; }
+
+        .del-circle {
+            width: 40px; height: 40px; border-radius: 50%; border: 3px solid var(--dark);
+            background: #ff7675; color: #fff; font-weight: 900;
+            display: flex; align-items: center; justify-content: center;
+            transition: 0.3s;
+        }
+        .del-circle:hover { transform: rotate(90deg) scale(1.1); }
+
+        .info-footer {
+            margin-top: 60px; padding-top: 30px; border-top: 4px solid var(--dark);
+            display: flex; justify-content: space-between; font-weight: 800; font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="custom-cursor"></div>
+
+    <div class="main-container">
+        <div class="header-section">
+            <h1>FLUX_CART</h1>
+            <p>DYNAMIC LINKED LIST ENGINE</p>
+        </div>
+
+        <div class="interface">
+            <div class="input-wrapper">
+                <input type="text" id="itemName" placeholder="ENTER OBJECT NAME...">
+            </div>
+            <div class="btn-stack">
+                <button class="action-btn btn-head" onclick="addHead()">INSERT_HEAD</button>
+                <button class="action-btn btn-tail" onclick="addTail()">INSERT_TAIL</button>
+            </div>
+        </div>
+
+        <div class="list-container" id="visualList">
+            </div>
+
+        <div class="info-footer">
+            <span>MEM_STATUS: VIBRANT</span>
+            <span>NODES: <span id="nodeCount">0</span></span>
+            <span>LOC: NAGPUR_HACK_CENTER</span>
+        </div>
+    </div>
+
+    <script>
+        const dot = document.getElementById('custom-cursor');
+        document.addEventListener('mousemove', (e) => {
+            dot.style.left = e.clientX + 'px';
+            dot.style.top = e.clientY + 'px';
+        });
+
+        // Linked List Logic (True pointer-based simulation)
+        class Node {
+            constructor(data) {
+                this.id = Math.random().toString(36).substr(2, 4).toUpperCase();
+                this.data = data;
+                this.next = null;
+            }
+        }
+
+        let head = null;
+
+        function addHead() {
+            const val = document.getElementById('itemName').value.trim();
+            if(!val) return;
+            const newNode = new Node(val);
+            newNode.next = head;
+            head = newNode;
+            document.getElementById('itemName').value = "";
+            render();
+        }
+
+        function addTail() {
+            const val = document.getElementById('itemName').value.trim();
+            if(!val) return;
+            const newNode = new Node(val);
+            if(!head) {
+                head = newNode;
+            } else {
+                let curr = head;
+                while(curr.next) curr = curr.next;
+                curr.next = newNode;
+            }
+            document.getElementById('itemName').value = "";
+            render();
+        }
+
+        function remove(id) {
+            if(!head) return;
+            if(head.id === id) {
+                head = head.next;
+            } else {
+                let curr = head;
+                while(curr.next && curr.next.id !== id) curr = curr.next;
+                if(curr.next) curr.next = curr.next.next;
+            }
+            render();
+        }
+
+        function render() {
+            const list = document.getElementById('visualList');
+            const count = document.getElementById('nodeCount');
+            list.innerHTML = "";
+            let curr = head;
+            let i = 0;
+
+            if(!curr) {
+                list.innerHTML = "<p style='font-weight:900; opacity:0.2;'>HEAP_EMPTY // AWAITING_NODES</p>";
+            }
+
+            while(curr) {
+                const node = document.createElement('div');
+                node.className = 'node-card';
+                node.innerHTML = `
+                    <div>
+                        <span class="node-meta">ADDR: 0x${curr.id}</span>
+                        <span class="node-title">${curr.data}</span>
+                    </div>
+                    <button class="del-circle" onclick="remove('${curr.id}')">X</button>
+                `;
+                list.appendChild(node);
+                curr = curr.next;
+                i++;
+            }
+            count.innerText = i;
+        }
+
+        render();
+
+        // Cursor scaling
+        document.addEventListener('mouseover', (e) => {
+            if(e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') {
+                dot.style.transform = 'translate(-50%, -50%) scale(4)';
+            } else {
+                dot.style.transform = 'translate(-50%, -50%) scale(1)';
+            }
+        });
+    </script>
+</body>
+</html>
